@@ -1,0 +1,47 @@
+\documentclass[nobib]{tufte-handout}
+\usepackage{xparse}
+\usepackage{xpatch}
+\usepackage[
+  style=verbose,
+  autocite=footnote,
+  backend=biber
+]{biblatex}
+\addbibresource{biblatex-examples.bib}
+
+\makeatletter
+\xpatchcmd{\@footnotetext}%
+      {\color@begingroup}
+      {\color@begingroup\toggletrue{blx@footnote}}
+      {}
+      {}
+\makeatother
+
+\DeclareCiteCommand{\sidecitehelper}[\bibfootnotewrapper]
+  {\usebibmacro{prenote}}
+  {\usebibmacro{citeindex}%
+   \usebibmacro{cite}}
+  {\multicitedelim}
+  {\usebibmacro{cite:postnote}}
+
+\ExplSyntaxOn
+\NewDocumentCommand\sidecite{D<>{}O{}om}{%
+  \iftoggle{blx@footnote}
+    {\cs_set_protected_nopar:Npn \__sct_wrapper:nn ##1 ##2 {\mkbibparens{##2}}}
+    {\cs_set_protected_nopar:Npn \__sct_wrapper:nn ##1 ##2 {\sidenote[][##1]{##2}}}
+    {\IfNoValueTF{#3}
+      {\__sct_wrapper:nn{#1}{\sidecitehelper[#2]{#4}}}
+      {\__sct_wrapper:nn{#1}{\sidecitehelper[#2][#3]{#4}}}}
+}
+\ExplSyntaxOff
+
+\begin{document}
+
+This,\sidecite[8]{springer} should\autocite{springer} be a side note and this\sidecite[see][8]{springer} should too.
+
+Lorem ipsum\sidecite<2cm>[9]{geer} dolor\sidecite[cf.][]{springer}.
+
+Sit\sidenote{amet \sidecite{geer}}.
+
+\printbibliography 
+
+\end{document}
